@@ -15,7 +15,7 @@
 #     return {"message": "Crawling completed"}
 
 from fastapi import APIRouter
-from app.services.data_service import music_service
+from app.services.data_service import music_service, realtime_search_words_service
 
 router = APIRouter()
 
@@ -23,3 +23,8 @@ router = APIRouter()
 @router.get("/crawl/music")
 def music():
     return music_service()
+
+# Realtime Search Words
+@router.get("/crawl/realtime-search-words")
+def realtime_search_words():
+    return realtime_search_words_service()
