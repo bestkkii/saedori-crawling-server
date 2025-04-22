@@ -6,3 +6,12 @@
 ## DB에서 데이터 조회
 ## Gin에 전달
 
+from fastapi import APIRouter
+from app.services.data_service import music_service
+
+router = APIRouter()
+
+# Music
+@router.get("/crawl/music")
+def music():
+    return music_service()
