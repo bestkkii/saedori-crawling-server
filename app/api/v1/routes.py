@@ -15,9 +15,13 @@
 #     return {"message": "Crawling completed"}
 
 from fastapi import APIRouter
-from app.services.data_service import music_service, realtime_search_words_service
+from .endpoints import crawling
 
 router = APIRouter()
+router.include_router(crawling.router, prefix="/crawling")
+
+# 채은, 가경 commit 감사합니다. 크롤링은 endpoints를 따로 만들어서 아래는 수정 예정!
+from app.services.data_service import music_service, realtime_search_words_service
 
 # Music
 @router.get("/crawl/music")

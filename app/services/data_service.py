@@ -1,4 +1,5 @@
-# 크롤링 결과 DB에 저장
+# 크롤링 수행
+# 데이터를 json 형식으로 변환
 
 # Gin에 데이터 전달
 from app.crawlers.music import crawl_music
