@@ -1,6 +1,0 @@
-1. 크롤러의 공통 기능 정리 (crawlers/)
-2. 채은, 가경 코드 비동기에 맞게 수정
-3. endpoints, data_service R&R 명확하게
-4. 라우터 구현 (api/)
-5. main.py 구현
-6. 설정 수정 (config/settings.py)
