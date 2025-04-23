@@ -25,7 +25,6 @@ def crawl_top10(country, url, limit=10):
   # 검색어 항목 찾기
   trend_elements = driver.find_elements(By.CSS_SELECTOR, "div.mZ3RIc")[:limit]
   result = []
-
   for idx, elem in enumerate(trend_elements):
       try:
         word = elem.text
@@ -34,8 +33,7 @@ def crawl_top10(country, url, limit=10):
         result.append({
             "country": country,
             "search_word": word,
-            "rank": rank,
-            "timestamp": int(time.time())  # 현재 유닉스 타임스탬프
+            "rank": rank  # 현재 유닉스 타임스탬프
         })
 
       except Exception as e:
@@ -55,4 +53,4 @@ def crawl_realtime_search_words():
   for key, url in crawl_urls.items():
     realtime_search_words[key] = crawl_top10(key, url)
 
-  return { "realtime_search_words" : realtime_search_words }
+  return { "realtime_search_words" : realtime_search_words, "created_at" : int(time.time())  }
