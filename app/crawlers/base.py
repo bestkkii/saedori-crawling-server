@@ -60,23 +60,31 @@ class BaseCrawler(ABC):
         
         return chrome_options
 
-    def _get_driver(self) -> Dict[str, Any]:
+    def _get_driver(self) -> webdriver.Chrome:
         """
-        드라이버를 반환하는 메서드
+        GCP / Local PC에 따라 적절한 ChromeDriver를 설정하여 드라이버를 반환하는 메서드
+        
+        Returns:
+            webdriver.Chrome: 설정된 ChromeDriver 인스턴스
         """
         chrome_options = self._setup_chrome_options()
         
-        # GCP 환경에서 설치된 ChromeDriver 사용
-        # Github에 올릴 때는 아래 두 줄을 사용하고 다음 줄을 지우기 :  driver = webdriver.Chrome(options=chrome_options)
-        # service = Service(executable_path="/usr/bin/chromedriver")
+        # GCP 환경의 ChromeDriver 경로
+        import os
+        gcp_chromedriver_path = "/usr/bin/chromedriver"
+        # GCP 환경 확인 (GCP의 ChromeDriver가 존재하는지 확인)
+        if os.path.exists(gcp_chromedriver_path):
+            service = Service(executable_path=gcp_chromedriver_path)
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+        else:
+            driver = webdriver.Chrome(options=chrome_options)
         
-        # driver = webdriver.Chrome(service=service, options=chrome_options)
-        driver = webdriver.Chrome(options=chrome_options)
+        # 타임아웃 설정
         driver.set_page_load_timeout(self.timeout)
         return driver
         
     @abstractmethod
-    def crawl(self, url: str) -> Dict[str, Any]:
+    def crawl(self) -> Dict[str, Any]:
         """
         크롤링을 수행하고 결과를 반환하는 메서드
         Returns:
