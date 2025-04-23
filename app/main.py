@@ -1,21 +1,37 @@
 from fastapi import FastAPI
-from .config.settings import settings
-from .api.v1.routes import router as api_v1_router
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from .api.v1.router import router as api_v1_router
 
-# 웹서버 실행
+# FastAPI 앱 생성
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"  # 웹서버 실행 시 자동으로 생성되는 OpenAPI Swagger 문서의 경로
+    title="Saedori Crawling Server",
+    description="크롤링 서버 API",
+    version="1.0.0"
+)
+
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],  # Gin 서버 주소
+    allow_credentials=True,
+    allow_methods=["GET"],  # GET 메서드만 허용
+    allow_headers=["*"],
 )
 
 # API 라우터 등록
-app.include_router(api_v1_router, prefix=settings.API_V1_STR)
+app.include_router(api_v1_router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
-    return {"message": "Crawling Service API"} # 서버 접속 확인 용 return값
+    return {"message": "Saedori Crawling Server is running"}
 
 # 서버 실행
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",  # 모든 IP에서 접근 가능
+        port=8000,
+        reload=False,  # 프로덕션에서는 자동 리로드 비활성화
+        workers=1  # 단일 워커 사용 (멀티프로세싱 없이 순차적 크롤링)
+    )

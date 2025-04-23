@@ -4,6 +4,8 @@
 
 from typing import Dict, List, Any
 from ..crawlers import get_crawler, list_crawlers
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, TimeoutError
 from datetime import datetime
 import logging
 import os
@@ -67,40 +69,33 @@ class DataService:
             for name, crawler_class in self.crawlers.items()
         }
         
-        # 타임아웃 설정
+        # 멀티프로세싱 설정
+        self.max_workers = min(multiprocessing.cpu_count(), len(self.crawlers))
         self.timeout = 300  # 5분 타임아웃
         logger.info("DataService 초기화 완료")
 
-    def _run_crawler(self, name: str, crawler) -> Dict[str, Any]:
+    def _run_crawler(self, args):
         """
-        개별 크롤러를 실행하는 함수
-        
-        Args:
-            name: 크롤러 이름
-            crawler: 크롤러 인스턴스
-            
-        Returns:
-            Dict[str, Any]: 크롤링 결과
+        개별 크롤러를 실행하는 프로세스 함수
         """
-        logger.info(f"크롤러 '{name}' 실행 시작")
-        
+        crawler_name, crawler = args
         try:
             result = crawler.crawl()
-            logger.info(f"크롤러 '{name}' 실행 성공")
             return {
-                "crawling": "Success",
+                "name": crawler_name,
+                "status": "Success",
                 "result": result
             }
         except Exception as e:
-            logger.error(f"크롤러 '{name}' 실행 실패: {str(e)}")
             return {
-                "crawling": "Failed",
-                "result": {"error": str(e)}
+                "name": crawler_name,
+                "status": "Failed",
+                "error": str(e)
             }
 
     def crawl_all(self) -> Dict[str, Any]:
         """
-        모든 크롤러를 순차적으로 실행하고 결과를 반환
+        모든 크롤러를 병렬로 실행하고 결과를 반환
         """
         results = {
             "message": "Success",
@@ -117,25 +112,45 @@ class DataService:
             "realtime_search_words_google": "realtime_search_words_crawl"
         }
 
-        # 각 크롤러를 순차적으로 실행
-        for name, crawler in self.crawler_instances.items():
+        # 프로세스 풀 생성
+        with ProcessPoolExecutor(max_workers=self.max_workers) as executor:
+            # 크롤러 작업 준비
+            crawler_tasks = [(name, crawler) for name, crawler in self.crawler_instances.items()]
+            
             try:
-                # 크롤러 실행
-                result = self._run_crawler(name, crawler)
+                # 비동기로 크롤링 작업 실행
+                async_results = [executor.submit(self._run_crawler, (name, crawler)) for name, crawler in crawler_tasks]
                 
-                # 결과 저장
-                results[crawler_key_mapping[name]] = result
-                
-                # 에러가 있는 경우 로깅
-                if result["crawling"] == "Failed":
-                    logger.error(f"크롤러 '{name}' 실패: {result['result'].get('error', 'Unknown error')}")
-                
+                # 결과 수집
+                for async_result in async_results:
+                    try:
+                        result = async_result.result(timeout=self.timeout)
+                        results[crawler_key_mapping[result["name"]]] = {
+                            "crawling": result["status"],
+                            "result": result.get("result", {}) if result["status"] == "Success" else {}
+                        }
+                    except TimeoutError:
+                        # 타임아웃 발생 시 해당 크롤러 실패 처리
+                        crawler_name = result["name"] if "name" in result else "unknown"
+                        results[crawler_key_mapping[crawler_name]] = {
+                            "crawling": "Failed",
+                            "result": {},
+                            "error": "Crawling timeout"
+                        }
+                    except Exception as e:
+                        # 기타 예외 처리
+                        crawler_name = result["name"] if "name" in result else "unknown"
+                        results[crawler_key_mapping[crawler_name]] = {
+                            "crawling": "Failed",
+                            "result": {},
+                            "error": str(e)
+                        }
+
             except Exception as e:
-                # 예외 처리
-                logger.error(f"크롤러 '{name}' 실행 중 예외 발생: {str(e)}")
-                results[crawler_key_mapping[name]] = {
-                    "crawling": "Failed",
-                    "result": {"error": str(e)}
+                logger.error(f"크롤링 작업 실행 중 예외 발생: {str(e)}")
+                results = {
+                    "error_code": "500",
+                    "message": "INTERNAL_SERVER_ERROR"
                 }
 
         return results
