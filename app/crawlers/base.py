@@ -93,12 +93,13 @@ class BaseCrawler(ABC):
         driver = self._get_driver()
 
         try:
-            driver.get(url)
+            pass
+            # driver.get(url)
             
             # 페이지 로딩 대기
-            WebDriverWait(driver, self.timeout).until(
-                lambda d: d.execute_script('return document.readyState') == 'complete'
-            )
+            # WebDriverWait(driver, self.timeout).until(
+            #     lambda d: d.execute_script('return document.readyState') == 'complete'
+            # )
             
             # 크롤링 수행
             # result = self._crawl(driver)

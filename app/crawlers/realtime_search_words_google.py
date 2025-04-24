@@ -72,13 +72,11 @@ class RealtimeSearchWordsGoogleCrawler(BaseCrawler):
                 realtime_search_words[key] = self._crawl_top10(driver, key, url)
                 
             return {
-                "crawling": "Success",
-                "result": {"realtime_search_words": realtime_search_words}
+                "realtime_search_words": realtime_search_words
             }
         except Exception as e:
             return {
-                "crawling": "Failed",
-                "result": {"error": str(e)}
+                "error": str(e)
             }
         finally:
             driver.quit()

@@ -124,13 +124,11 @@ class MusicCrawler(BaseCrawler):
             music_data["spotify"] = self._crawl_spotify(driver, self.crawl_urls["spotify"])
                 
             return {
-                "crawling": "Success",
-                "result": {"music": music_data}
+                "music": music_data
             }
         except Exception as e:
             return {
-                "crawling": "Failed",
-                "result": {"error": str(e)}
+                "error": str(e)
             }
         finally:
             driver.quit()

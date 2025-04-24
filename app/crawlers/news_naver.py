@@ -83,13 +83,11 @@ class NewsNaverCrawler(BaseCrawler):
                 news_data.extend(self._crawl_news(driver, url))
                 
             return {
-                "crawling": "Success",
-                "result": {"news": news_data}
+                "news": news_data
             }
         except Exception as e:
             return {
-                "crawling": "Failed",
-                "result": {"error": str(e)}
+                "error": str(e)
             }
         finally:
             driver.quit()
