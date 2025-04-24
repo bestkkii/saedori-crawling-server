@@ -111,8 +111,8 @@ class MusicCrawler(BaseCrawler):
             Dict[str, Any]: 크롤링 결과
             {
                 "music": {
-                    "melon": [...],
-                    "spotify": [...]
+                    "domestic": [...],
+                    "global": [...]
                 }
             }
         """
@@ -120,8 +120,8 @@ class MusicCrawler(BaseCrawler):
         
         try:
             music_data = {}
-            music_data["melon"] = self._crawl_melon(driver, self.crawl_urls["melon"])
-            music_data["spotify"] = self._crawl_spotify(driver, self.crawl_urls["spotify"])
+            music_data["domestic"] = self._crawl_melon(driver, self.crawl_urls["melon"])
+            music_data["global"] = self._crawl_spotify(driver, self.crawl_urls["spotify"])
                 
             return {
                 "music": music_data
