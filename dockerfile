@@ -30,3 +30,4 @@ COPY . .
 EXPOSE 8000
 
 # 실행 명령 (app.main:app은 FastAPI 인스턴스 위치에 맞게 수정)
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
