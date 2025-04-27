@@ -2,6 +2,11 @@
 ---
 - FastAPI 서버입니다.
 
+## 실행 방법
+```bash
+pip install "uvicorn[standard]"
+uvicorn app.main:app --reload
+```
 
 ## 디렉터리 구조
 ---
