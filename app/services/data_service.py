@@ -8,6 +8,7 @@ from datetime import datetime
 import logging
 import os
 import codecs
+from ..utils import send_slack_alert
 
 # 로그 디렉토리 생성
 log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
@@ -137,6 +138,7 @@ class DataService:
                     "crawling": "Failed",
                     "result": {"error": str(e)}
                 }
+                send_slack_alert(f"크롤러 '{name}' 실패: {str(e)}")
 
         return results
 
