@@ -19,12 +19,39 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# 크롬/크로미움 및 chromedriver 설치
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        chromium-driver \
+        chromium \
+        fonts-liberation \
+        libasound2 \
+        libatk-bridge2.0-0 \
+        libatk1.0-0 \
+        libcups2 \
+        libdbus-1-3 \
+        libgdk-pixbuf2.0-0 \
+        libnspr4 \
+        libnss3 \
+        libx11-xcb1 \
+        libxcomposite1 \
+        libxdamage1 \
+        libxrandr2 \
+        xdg-utils \
+        wget \
+        unzip \
+    && rm -rf /var/lib/apt/lists/*
+
 # 의존성 복사
 COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
 # 소스 복사
 COPY . .
+
+# 환경 변수 설정 (크롬 경로를 명확히 지정)
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROMEDRIVER_BIN=/usr/bin/chromedriver
 
 # 포트 노출 (FastAPI 기본: 8000)
 EXPOSE 8000
